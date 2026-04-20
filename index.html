@@ -3,828 +3,631 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MacroPilot – Your AI Nutrition Coach</title>
+<title>MacroPilot — AI nutrition coach for lifters</title>
+<meta name="description" content="The AI coach that tells you exactly what to eat today, based on your training and your goals.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --black: #0a0a0a;
-    --off-black: #111111;
-    --panel: #161616;
-    --border: #2a2a2a;
-    --border-light: #333333;
-    --green: #b8ff57;
-    --green-dim: #8fcc3a;
-    --white: #f5f5f0;
-    --muted: #888880;
-    --condensed: 'Barlow Condensed', sans-serif;
-    --body: 'DM Sans', sans-serif;
+    --ink: #111111;
+    --ink-soft: #3a3a3a;
+    --ink-muted: #8a8a8a;
+    --ink-faint: #c8c8c8;
+    --line: #e5e5e5;
+    --paper: #fafaf8;
+    --paper-pure: #ffffff;
+    --serif: 'Instrument Serif', Georgia, serif;
+    --sans: 'Inter', -apple-system, sans-serif;
   }
+
+  [data-theme="dark"] {
+    --ink: #f5f5f0;
+    --ink-soft: #c8c8c8;
+    --ink-muted: #8a8a8a;
+    --ink-faint: #3a3a3a;
+    --line: #262626;
+    --paper: #0f0f0f;
+    --paper-pure: #1a1a1a;
+  }
+
+  body { transition: background 0.3s ease, color 0.3s ease; }
+  .form-row, .submit-btn, .vs-col, nav, footer, .email-input { transition: background 0.3s ease, color 0.3s ease, border-color 0.2s ease; }
 
   html { scroll-behavior: smooth; }
 
   body {
-    background: var(--black);
-    color: var(--white);
-    font-family: var(--body);
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
     font-weight: 400;
     line-height: 1.6;
-    overflow-x: hidden;
-  }
-
-  /* NOISE TEXTURE OVERLAY */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 9999;
-    opacity: 0.4;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   /* NAV */
   nav {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    z-index: 100;
-    padding: 20px 40px;
+    padding: 32px 48px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-bottom: 1px solid var(--border);
-    background: rgba(10,10,10,0.85);
-    backdrop-filter: blur(12px);
-  }
-
-  .logo {
-    font-family: var(--condensed);
-    font-size: 22px;
-    font-weight: 800;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-  }
-
-  .logo span { color: var(--green); }
-
-  .nav-badge {
-    font-size: 11px;
-    font-weight: 500;
-    font-family: var(--body);
-    color: var(--green);
-    background: rgba(184,255,87,0.1);
-    border: 1px solid rgba(184,255,87,0.25);
-    padding: 4px 12px;
-    border-radius: 20px;
-    letter-spacing: 0.05em;
-  }
-
-  /* HERO */
-  .hero {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    padding: 120px 40px 80px;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .hero-bg-text {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-family: var(--condensed);
-    font-size: clamp(140px, 22vw, 320px);
-    font-weight: 900;
-    text-transform: uppercase;
-    color: transparent;
-    -webkit-text-stroke: 1px rgba(255,255,255,0.04);
-    white-space: nowrap;
-    pointer-events: none;
-    letter-spacing: -0.02em;
-    user-select: none;
-  }
-
-  .hero-grid {
-    display: grid;
-    grid-template-columns: 1fr 420px;
-    gap: 60px;
-    align-items: flex-end;
-    position: relative;
-    z-index: 2;
-    max-width: 1200px;
-  }
-
-  .hero-label {
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--green);
-    margin-bottom: 24px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .hero-label::before {
-    content: '';
-    display: block;
-    width: 24px;
-    height: 1px;
-    background: var(--green);
-  }
-
-  h1 {
-    font-family: var(--condensed);
-    font-size: clamp(64px, 9vw, 130px);
-    font-weight: 900;
-    text-transform: uppercase;
-    line-height: 0.92;
-    letter-spacing: -0.01em;
-    margin-bottom: 32px;
-  }
-
-  h1 em {
-    font-style: normal;
-    color: var(--green);
-    display: block;
-  }
-
-  .hero-sub {
-    font-size: 17px;
-    color: var(--muted);
-    max-width: 480px;
-    line-height: 1.7;
-    font-weight: 300;
-  }
-
-  .hero-sub strong {
-    color: var(--white);
-    font-weight: 500;
-  }
-
-  /* WAITLIST CARD */
-  .waitlist-card {
-    background: var(--panel);
-    border: 1px solid var(--border-light);
-    border-radius: 4px;
-    padding: 36px;
-    position: relative;
-    animation: fadeUp 0.8s ease 0.3s both;
-  }
-
-  .waitlist-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: var(--green);
-  }
-
-  .waitlist-card h3 {
-    font-family: var(--condensed);
-    font-size: 22px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 6px;
-  }
-
-  .waitlist-card p {
-    font-size: 13px;
-    color: var(--muted);
-    margin-bottom: 24px;
-  }
-
-  .waitlist-count {
-    color: var(--green);
-    font-weight: 500;
-  }
-
-  .form-group { margin-bottom: 14px; }
-
-  .form-group label {
-    display: block;
-    font-size: 11px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 7px;
-    font-weight: 500;
-  }
-
-  .form-group input,
-  .form-group select {
-    width: 100%;
-    background: var(--off-black);
-    border: 1px solid var(--border-light);
-    border-radius: 3px;
-    padding: 12px 16px;
-    font-size: 14px;
-    font-family: var(--body);
-    color: var(--white);
-    outline: none;
-    transition: border-color 0.2s;
-    appearance: none;
-  }
-
-  .form-group input:focus,
-  .form-group select:focus {
-    border-color: var(--green);
-  }
-
-  .form-group input::placeholder { color: #555; }
-
-  .form-group select option { background: #1a1a1a; }
-
-  .btn-submit {
-    width: 100%;
-    background: var(--green);
-    color: var(--black);
-    border: none;
-    border-radius: 3px;
-    padding: 15px;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    font-family: var(--condensed);
-    cursor: pointer;
-    transition: background 0.2s, transform 0.1s;
-    margin-top: 6px;
-  }
-
-  .btn-submit:hover { background: var(--green-dim); }
-  .btn-submit:active { transform: scale(0.99); }
-
-  .form-note {
-    font-size: 11px;
-    color: #555;
-    text-align: center;
-    margin-top: 12px;
-  }
-
-  .success-msg {
-    display: none;
-    text-align: center;
-    padding: 20px 0;
-  }
-
-  .success-msg .check {
-    font-size: 40px;
-    margin-bottom: 12px;
-  }
-
-  .success-msg h4 {
-    font-family: var(--condensed);
-    font-size: 22px;
-    font-weight: 700;
-    text-transform: uppercase;
-    color: var(--green);
-    margin-bottom: 6px;
-  }
-
-  .success-msg p {
-    font-size: 13px;
-    color: var(--muted);
-    margin: 0;
-  }
-
-  /* STATS BAR */
-  .stats-bar {
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-    padding: 24px 40px;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    max-width: 100%;
-    background: var(--off-black);
-  }
-
-  .stat-item {
-    text-align: center;
-    padding: 0 20px;
-    border-right: 1px solid var(--border);
-  }
-
-  .stat-item:last-child { border-right: none; }
-
-  .stat-num {
-    font-family: var(--condensed);
-    font-size: 42px;
-    font-weight: 800;
-    color: var(--green);
-    line-height: 1;
-    display: block;
-  }
-
-  .stat-label {
-    font-size: 12px;
-    color: var(--muted);
-    margin-top: 4px;
-    letter-spacing: 0.05em;
-  }
-
-  /* BENEFITS */
-  .benefits {
-    padding: 100px 40px;
     max-width: 1200px;
     margin: 0 auto;
   }
 
-  .section-header {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    margin-bottom: 60px;
-    gap: 40px;
+  .logo {
+    font-family: var(--serif);
+    font-size: 26px;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    color: var(--ink);
   }
 
-  .section-tag {
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--green);
-    margin-bottom: 16px;
+  .logo em {
+    font-style: italic;
+  }
+
+  .nav-link {
+    font-size: 14px;
+    color: var(--ink-muted);
+    text-decoration: none;
+    letter-spacing: 0;
+    transition: color 0.2s;
+  }
+
+  .nav-link:hover { color: var(--ink); }
+
+  .nav-right {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 24px;
   }
 
-  .section-tag::before {
-    content: '';
-    display: block;
-    width: 24px;
-    height: 1px;
-    background: var(--green);
-  }
-
-  h2 {
-    font-family: var(--condensed);
-    font-size: clamp(42px, 5vw, 72px);
-    font-weight: 800;
-    text-transform: uppercase;
-    line-height: 0.95;
-    letter-spacing: -0.01em;
-  }
-
-  .section-desc {
-    font-size: 15px;
-    color: var(--muted);
-    max-width: 300px;
-    line-height: 1.7;
-    font-weight: 300;
-    flex-shrink: 0;
-  }
-
-  .benefits-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1px;
-    background: var(--border);
-    border: 1px solid var(--border);
-  }
-
-  .benefit-item {
-    background: var(--off-black);
-    padding: 48px 36px;
-    position: relative;
-    transition: background 0.3s;
-  }
-
-  .benefit-item:hover { background: var(--panel); }
-
-  .benefit-num {
-    font-family: var(--condensed);
-    font-size: 72px;
-    font-weight: 900;
-    color: transparent;
-    -webkit-text-stroke: 1px var(--border-light);
-    line-height: 1;
-    margin-bottom: 24px;
-    transition: -webkit-text-stroke-color 0.3s;
-  }
-
-  .benefit-item:hover .benefit-num {
-    -webkit-text-stroke-color: rgba(184,255,87,0.3);
-  }
-
-  .benefit-icon {
-    width: 40px;
-    height: 40px;
-    background: rgba(184,255,87,0.1);
-    border: 1px solid rgba(184,255,87,0.2);
-    border-radius: 3px;
+  .theme-toggle {
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 20px;
+    color: var(--ink-muted);
+    transition: all 0.2s ease;
+    padding: 0;
   }
 
-  .benefit-icon svg {
-    width: 18px;
-    height: 18px;
-    stroke: var(--green);
+  .theme-toggle:hover {
+    color: var(--ink);
+    border-color: var(--ink-muted);
+  }
+
+  .theme-toggle svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
     fill: none;
     stroke-width: 1.5;
     stroke-linecap: round;
     stroke-linejoin: round;
   }
 
-  .benefit-item h3 {
-    font-family: var(--condensed);
-    font-size: 26px;
-    font-weight: 700;
+  .theme-toggle .sun { display: none; }
+  .theme-toggle .moon { display: block; }
+  [data-theme="dark"] .theme-toggle .sun { display: block; }
+  [data-theme="dark"] .theme-toggle .moon { display: none; }
+
+  /* HERO */
+  .hero {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 80px 48px 100px;
+    text-align: center;
+  }
+
+  .eyebrow {
+    font-size: 12px;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
-    letter-spacing: 0.02em;
-    margin-bottom: 12px;
-    line-height: 1.1;
-  }
-
-  .benefit-item p {
-    font-size: 14px;
-    color: var(--muted);
-    line-height: 1.7;
-    font-weight: 300;
-  }
-
-  .benefit-item p strong {
-    color: var(--white);
+    color: var(--ink-muted);
+    margin-bottom: 32px;
     font-weight: 500;
   }
 
-  /* HOW IT WORKS */
-  .how {
-    padding: 0 40px 100px;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-
-  .steps {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 40px;
-    margin-top: 60px;
-  }
-
-  .step {
-    position: relative;
-    padding-top: 24px;
-    border-top: 1px solid var(--border);
-  }
-
-  .step-num {
-    font-family: var(--condensed);
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    color: var(--green);
-    margin-bottom: 20px;
-  }
-
-  .step h4 {
-    font-family: var(--condensed);
-    font-size: 22px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-    margin-bottom: 10px;
-  }
-
-  .step p {
-    font-size: 14px;
-    color: var(--muted);
-    line-height: 1.7;
-    font-weight: 300;
-  }
-
-  /* VS SECTION */
-  .vs-section {
-    margin: 0 40px 100px;
-    border: 1px solid var(--border);
-    background: var(--panel);
-    padding: 60px;
-    display: grid;
-    grid-template-columns: 1fr 1px 1fr;
-    gap: 60px;
-    align-items: start;
-  }
-
-  .vs-divider {
-    background: var(--border);
-    align-self: stretch;
-  }
-
-  .vs-label {
-    font-family: var(--condensed);
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+  h1 {
+    font-family: var(--serif);
+    font-size: clamp(48px, 7vw, 76px);
+    font-weight: 400;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: var(--ink);
     margin-bottom: 28px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid var(--border);
   }
 
-  .vs-label.bad { color: var(--muted); }
-  .vs-label.good { color: var(--green); }
+  h1 em {
+    font-style: italic;
+    color: var(--ink-soft);
+  }
 
-  .vs-list { list-style: none; }
+  .hero-sub {
+    font-size: 18px;
+    line-height: 1.6;
+    color: var(--ink-soft);
+    max-width: 520px;
+    margin: 0 auto 48px;
+    font-weight: 400;
+  }
 
-  .vs-list li {
+  /* FORM */
+  .waitlist {
+    max-width: 420px;
+    margin: 0 auto 20px;
+  }
+
+  .form-row {
+    display: flex;
+    gap: 8px;
+    background: var(--paper-pure);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 6px;
+    transition: border-color 0.2s;
+  }
+
+  .form-row:focus-within {
+    border-color: var(--ink);
+  }
+
+  .email-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: var(--sans);
+    font-size: 15px;
+    padding: 10px 18px;
+    color: var(--ink);
+    min-width: 0;
+  }
+
+  .email-input::placeholder {
+    color: var(--ink-muted);
+  }
+
+  .submit-btn {
+    background: var(--ink);
+    color: var(--paper-pure);
+    border: none;
+    border-radius: 999px;
+    padding: 10px 22px;
+    font-family: var(--sans);
     font-size: 14px;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    color: var(--muted);
-    font-weight: 300;
-  }
-
-  .vs-list li:last-child { border-bottom: none; }
-
-  .vs-list.good li { color: var(--white); }
-
-  .vs-icon {
-    width: 18px;
-    height: 18px;
-    flex-shrink: 0;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 10px;
-    font-weight: 700;
-  }
-
-  .vs-icon.x { background: rgba(255,80,80,0.15); color: #ff5050; }
-  .vs-icon.check { background: rgba(184,255,87,0.15); color: var(--green); }
-
-  /* CTA BOTTOM */
-  .cta-bottom {
-    padding: 100px 40px;
-    text-align: center;
-    border-top: 1px solid var(--border);
-    position: relative;
-    overflow: hidden;
-  }
-
-  .cta-bottom::before {
-    content: 'JOIN';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-family: var(--condensed);
-    font-size: clamp(120px, 20vw, 280px);
-    font-weight: 900;
-    color: transparent;
-    -webkit-text-stroke: 1px rgba(255,255,255,0.03);
-    pointer-events: none;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
     white-space: nowrap;
   }
 
-  .cta-bottom h2 {
+  .submit-btn:hover { background: var(--ink-soft); }
+  .submit-btn:active { transform: scale(0.98); }
+
+  .form-note {
+    font-size: 13px;
+    color: var(--ink-muted);
+    margin-top: 14px;
+  }
+
+  .form-note em {
+    font-family: var(--serif);
+    font-style: italic;
+    color: var(--ink);
+  }
+
+  /* DIVIDER */
+  .divider {
+    max-width: 80px;
+    margin: 0 auto;
+    border: none;
+    border-top: 1px solid var(--line);
+  }
+
+  /* BENEFITS */
+  .benefits {
+    max-width: 840px;
+    margin: 0 auto;
+    padding: 100px 48px;
+  }
+
+  .section-header {
+    text-align: center;
+    margin-bottom: 80px;
+  }
+
+  h2 {
+    font-family: var(--serif);
+    font-size: clamp(36px, 4.5vw, 52px);
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
     margin-bottom: 20px;
-    position: relative;
   }
 
-  .cta-bottom p {
-    font-size: 16px;
-    color: var(--muted);
+  h2 em { font-style: italic; color: var(--ink-soft); }
+
+  .section-desc {
+    font-size: 17px;
+    color: var(--ink-soft);
     max-width: 480px;
-    margin: 0 auto 40px;
-    font-weight: 300;
-    position: relative;
+    margin: 0 auto;
+    line-height: 1.6;
   }
 
-  .btn-cta {
-    display: inline-block;
-    background: var(--green);
-    color: var(--black);
-    padding: 16px 48px;
-    font-family: var(--condensed);
+  .benefits-list {
+    display: flex;
+    flex-direction: column;
+    gap: 60px;
+  }
+
+  .benefit {
+    display: grid;
+    grid-template-columns: 60px 1fr;
+    gap: 32px;
+    align-items: start;
+  }
+
+  .benefit-num {
+    font-family: var(--serif);
+    font-size: 40px;
+    font-style: italic;
+    color: var(--ink-faint);
+    line-height: 1;
+    padding-top: 4px;
+  }
+
+  .benefit h3 {
+    font-family: var(--serif);
+    font-size: 26px;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    margin-bottom: 10px;
+    color: var(--ink);
+    line-height: 1.2;
+  }
+
+  .benefit p {
     font-size: 16px;
-    font-weight: 700;
+    color: var(--ink-soft);
+    line-height: 1.7;
+  }
+
+  .benefit p em {
+    font-family: var(--serif);
+    font-style: italic;
+    color: var(--ink);
+  }
+
+  /* COMPARISON */
+  .comparison {
+    max-width: 840px;
+    margin: 0 auto;
+    padding: 0 48px 100px;
+  }
+
+  .vs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .vs-col {
+    padding: 40px 32px;
+  }
+
+  .vs-col:first-child {
+    border-right: 1px solid var(--line);
+  }
+
+  .vs-label {
+    font-size: 12px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    text-decoration: none;
-    border-radius: 3px;
-    transition: background 0.2s, transform 0.1s;
-    position: relative;
+    color: var(--ink-muted);
+    margin-bottom: 20px;
+    font-weight: 500;
   }
 
-  .btn-cta:hover { background: var(--green-dim); }
-  .btn-cta:active { transform: scale(0.99); }
+  .vs-col h4 {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    margin-bottom: 24px;
+    color: var(--ink);
+  }
+
+  .vs-col ul {
+    list-style: none;
+  }
+
+  .vs-col li {
+    font-size: 14px;
+    color: var(--ink-soft);
+    padding: 8px 0;
+    border-bottom: 1px solid var(--line);
+    line-height: 1.5;
+  }
+
+  .vs-col li:last-child { border-bottom: none; }
+
+  .vs-col.good li {
+    color: var(--ink);
+  }
+
+  /* CTA */
+  .cta {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 100px 48px;
+    text-align: center;
+    border-top: 1px solid var(--line);
+  }
+
+  .cta h2 {
+    margin-bottom: 20px;
+  }
+
+  .cta p {
+    font-size: 17px;
+    color: var(--ink-soft);
+    margin-bottom: 40px;
+    line-height: 1.6;
+  }
 
   /* FOOTER */
   footer {
-    padding: 30px 40px;
-    border-top: 1px solid var(--border);
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 48px 48px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    font-size: 12px;
-    color: #444;
+    border-top: 1px solid var(--line);
+    font-size: 13px;
+    color: var(--ink-muted);
   }
 
-  /* ANIMATIONS */
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(24px); }
+  footer .logo {
+    font-size: 18px;
+  }
+
+  /* SUCCESS */
+  .success {
+    display: none;
+    text-align: center;
+    padding: 20px 0;
+    animation: fadeIn 0.4s ease;
+  }
+
+  .success-mark {
+    font-family: var(--serif);
+    font-size: 40px;
+    font-style: italic;
+    color: var(--ink);
+    margin-bottom: 12px;
+    line-height: 1;
+  }
+
+  .success p {
+    font-size: 15px;
+    color: var(--ink-soft);
+  }
+
+  .success p em {
+    font-family: var(--serif);
+    font-style: italic;
+    color: var(--ink);
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
   }
 
-  .fade-up {
-    opacity: 0;
-    transform: translateY(30px);
-    transition: opacity 0.7s ease, transform 0.7s ease;
-  }
-
-  .fade-up.visible {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
   /* MOBILE */
-  @media (max-width: 768px) {
-    nav { padding: 16px 20px; }
-    .hero { padding: 100px 20px 60px; }
-    .hero-grid { grid-template-columns: 1fr; gap: 40px; }
-    .stats-bar { padding: 20px; grid-template-columns: repeat(3,1fr); }
-    .stat-num { font-size: 28px; }
-    .benefits { padding: 60px 20px; }
-    .benefits-grid { grid-template-columns: 1fr; }
-    .section-header { flex-direction: column; align-items: flex-start; }
-    .steps { grid-template-columns: 1fr; }
-    .vs-section { margin: 0 20px 60px; padding: 30px 20px; grid-template-columns: 1fr; }
-    .vs-divider { display: none; }
-    .how { padding: 0 20px 60px; }
-    .cta-bottom { padding: 60px 20px; }
-    footer { flex-direction: column; gap: 10px; text-align: center; }
+  @media (max-width: 680px) {
+    nav { padding: 24px 24px; }
+    .nav-right { gap: 16px; }
+    .hero { padding: 40px 24px 80px; }
+    .benefits { padding: 80px 24px; }
+    .comparison { padding: 0 24px 80px; }
+    .cta { padding: 80px 24px; }
+    footer { padding: 24px; flex-direction: column; gap: 12px; text-align: center; }
+
+    .form-row {
+      flex-direction: column;
+      border-radius: 12px;
+      padding: 8px;
+      gap: 8px;
+    }
+    .email-input { width: 100%; padding: 12px 16px; }
+    .submit-btn { width: 100%; padding: 12px; border-radius: 8px; }
+
+    .benefit {
+      grid-template-columns: 1fr;
+      gap: 12px;
+      text-align: center;
+    }
+
+    .vs-grid { grid-template-columns: 1fr; }
+    .vs-col:first-child {
+      border-right: none;
+      border-bottom: 1px solid var(--line);
+    }
   }
 </style>
 </head>
 <body>
 
 <nav>
-  <div class="logo">Macro<span>Pilot</span>.fit</div>
-  <div class="nav-badge">Early Access</div>
+  <div class="logo">macro<em>pilot</em></div>
+  <div class="nav-right">
+    <a href="#waitlist" class="nav-link">Join waitlist</a>
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+      <svg class="moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      <svg class="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+    </button>
+  </div>
 </nav>
 
 <!-- HERO -->
 <section class="hero">
-  <div class="hero-bg-text">FUEL</div>
-  <div class="hero-grid">
-    <div>
-      <div class="hero-label">AI Nutrition Coach for Lifters</div>
-      <h1>Stop counting.<br><em>Start fueling.</em></h1>
-      <p class="hero-sub">
-        MacroPilot is the AI coach that tells you <strong>exactly what to eat today</strong> — based on your workout, your goals, and what's actually in your fridge. Not a food diary. A co-pilot.
-      </p>
-    </div>
-    <div class="waitlist-card">
-      <h3>Join the waitlist</h3>
-      <p>Early members get <span class="waitlist-count">lifetime 50% off</span> when we launch.</p>
-      <button class="btn-submit" data-tally-open="GxByEp" data-tally-emoji-text="👊" data-tally-emoji-animation="wave">CLAIM MY SPOT →</button>
-      <p class="form-note">Free to join. No credit card. No spam.</p>
-    </div>
+  <div class="eyebrow">AI nutrition coach · Coming soon</div>
+  <h1>Stop counting.<br><em>Start fueling.</em></h1>
+  <p class="hero-sub">
+    MacroPilot is the AI coach that tells you exactly what to eat today — based on your training, your goals, and what's actually in your fridge.
+  </p>
+
+  <div class="waitlist" id="waitlist">
+    <form class="form-row" id="waitlist-form" onsubmit="return handleSubmit(event)">
+      <input
+        type="email"
+        class="email-input"
+        id="email"
+        placeholder="your@email.com"
+        required
+        autocomplete="email"
+      />
+      <button type="submit" class="submit-btn">Get early access</button>
+    </form>
+    <p class="form-note">Early members get <em>lifetime 50% off</em> when we launch.</p>
+
+    <div class="success" id="success">
+      <div class="success-mark">✓</div>
+      <p>You're on the list.<br><em>We'll be in touch soon.</em></p>
     </div>
   </div>
 </section>
 
-<!-- STATS -->
-<div class="stats-bar">
-  <div class="stat-item">
-    <span class="stat-num">90%</span>
-    <div class="stat-label">of gym-goers don't hit their protein target</div>
-  </div>
-  <div class="stat-item">
-    <span class="stat-num">0</span>
-    <div class="stat-label">apps tell you what to eat — they only track what you ate</div>
-  </div>
-  <div class="stat-item">
-    <span class="stat-num">$14B</span>
-    <div class="stat-label">fitness app market — and still no real AI coach</div>
-  </div>
-</div>
+<hr class="divider">
 
 <!-- BENEFITS -->
 <section class="benefits">
-  <div class="section-header fade-up">
-    <div>
-      <div class="section-tag">Why MacroPilot</div>
-      <h2>Finally.<br>An AI that<br>feeds your gains.</h2>
-    </div>
+  <div class="section-header">
+    <h2>An AI that <em>feeds your gains.</em></h2>
     <p class="section-desc">Three things every serious lifter needs — that no app has ever gotten right.</p>
   </div>
 
-  <div class="benefits-grid fade-up">
-    <div class="benefit-item">
-      <div class="benefit-num">01</div>
-      <div class="benefit-icon">
-        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+  <div class="benefits-list">
+    <div class="benefit">
+      <div class="benefit-num">i.</div>
+      <div>
+        <h3>Your plan, not a template</h3>
+        <p>Tell MacroPilot your goal, your body, and what's in your fridge. It generates a full day of meals in seconds — tailored to whether you're <em>training today or resting</em>.</p>
       </div>
-      <h3>Your plan.<br>Not a template.</h3>
-      <p>Tell MacroPilot your goal, your body, and <strong>what's in your fridge</strong>. It generates a full day of meals in seconds — tailored to whether you're training today or resting.</p>
     </div>
-    <div class="benefit-item">
-      <div class="benefit-num">02</div>
-      <div class="benefit-icon">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+
+    <div class="benefit">
+      <div class="benefit-num">ii.</div>
+      <div>
+        <h3>Real-time, meal by meal</h3>
+        <p>Ate something off-plan? Ask MacroPilot. It recalculates the rest of your day on the fly so one burger doesn't derail your week. <em>No guilt, just data.</em></p>
       </div>
-      <h3>Real-time.<br>Meal by meal.</h3>
-      <p>Ate something off-plan? Ask MacroPilot. It recalculates the rest of your day <strong>on the fly</strong> so one burger doesn't derail your week. No guilt, just data.</p>
     </div>
-    <div class="benefit-item">
-      <div class="benefit-num">03</div>
-      <div class="benefit-icon">
-        <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+
+    <div class="benefit">
+      <div class="benefit-num">iii.</div>
+      <div>
+        <h3>Learns every week</h3>
+        <p>Weekly check-ins teach MacroPilot your patterns. If the scale isn't moving, it adjusts your calories and macros automatically — <em>like a coach who pays attention</em>.</p>
       </div>
-      <h3>Learns.<br>Every week.</h3>
-      <p>Weekly check-ins teach MacroPilot your patterns. <strong>If the scale isn't moving</strong>, it adjusts your calories and macros automatically — like a coach who actually pays attention.</p>
     </div>
   </div>
 </section>
 
-<!-- HOW IT WORKS -->
-<section class="how fade-up">
-  <div class="section-tag">How it works</div>
-  <h2>Three steps.<br>Zero guesswork.</h2>
-  <div class="steps">
-    <div class="step">
-      <div class="step-num">STEP 01</div>
-      <h4>Set your profile</h4>
-      <p>Goal, weight, height, training frequency, food preferences. Takes 5 minutes. MacroPilot uses this as your permanent baseline.</p>
+<!-- COMPARISON -->
+<section class="comparison">
+  <div class="vs-grid">
+    <div class="vs-col">
+      <div class="vs-label">Every other app</div>
+      <h4>Pass</h4>
+      <ul>
+        <li>Asks what you already ate</li>
+        <li>Shows a database of millions of foods to scroll</li>
+        <li>Same targets, forever</li>
+        <li>Ignores whether you trained today</li>
+        <li>Zero personalization after signup</li>
+      </ul>
     </div>
-    <div class="step">
-      <div class="step-num">STEP 02</div>
-      <h4>Get today's plan</h4>
-      <p>Every morning, your AI generates 5 meals optimized for your training day. Full macros, prep time, and a grocery list if you need it.</p>
-    </div>
-    <div class="step">
-      <div class="step-num">STEP 03</div>
-      <h4>Check in. Improve.</h4>
-      <p>Each evening, log how it went. MacroPilot adapts tomorrow's plan based on reality — not theory. Your body changes. So does your plan.</p>
+    <div class="vs-col good">
+      <div class="vs-label">MacroPilot</div>
+      <h4>Play</h4>
+      <ul>
+        <li>Tells you what to eat today</li>
+        <li>Generates a full meal plan in seconds</li>
+        <li>Adjusts macros weekly from your results</li>
+        <li>Different plans for training and rest days</li>
+        <li>Learns your preferences over time</li>
+      </ul>
     </div>
   </div>
 </section>
 
-<!-- VS SECTION -->
-<div class="vs-section fade-up">
-  <div>
-    <div class="vs-label bad">Every other app</div>
-    <ul class="vs-list">
-      <li><span class="vs-icon x">✕</span> Asks "what did you eat?"</li>
-      <li><span class="vs-icon x">✕</span> Shows you a database of 8M foods to scroll through</li>
-      <li><span class="vs-icon x">✕</span> Same macro targets forever</li>
-      <li><span class="vs-icon x">✕</span> Ignores whether you trained today</li>
-      <li><span class="vs-icon x">✕</span> Zero personalization after signup</li>
-    </ul>
-  </div>
-  <div class="vs-divider"></div>
-  <div>
-    <div class="vs-label good">MacroPilot</div>
-    <ul class="vs-list good">
-      <li><span class="vs-icon check">✓</span> Tells you exactly what to eat today</li>
-      <li><span class="vs-icon check">✓</span> Generates a full meal plan in 10 seconds</li>
-      <li><span class="vs-icon check">✓</span> Adjusts macros weekly based on your results</li>
-      <li><span class="vs-icon check">✓</span> Different plans for training vs rest days</li>
-      <li><span class="vs-icon check">✓</span> Learns your preferences over time</li>
-    </ul>
-  </div>
-</div>
-
-<!-- CTA BOTTOM -->
-<section class="cta-bottom fade-up">
-  <h2>Your gains are waiting.</h2>
+<!-- CTA -->
+<section class="cta">
+  <h2>Your gains are <em>waiting.</em></h2>
   <p>Join the waitlist. Be first to stop guessing and start eating with intention.</p>
-  <a href="#tally-open=GxByEp&tally-emoji-text=👊&tally-emoji-animation=wave" class="btn-cta">GET EARLY ACCESS →</a>
+
+  <div class="waitlist">
+    <form class="form-row" onsubmit="return handleSubmit(event)">
+      <input
+        type="email"
+        class="email-input"
+        placeholder="your@email.com"
+        required
+        autocomplete="email"
+      />
+      <button type="submit" class="submit-btn">Get early access</button>
+    </form>
+    <p class="form-note">Free to join. No credit card.</p>
+  </div>
 </section>
 
 <footer>
-  <div class="logo" style="font-size:16px;">Macro<span style="color:var(--green)">Pilot</span>.fit</div>
-  <div>© 2026 MacroPilot · Built for lifters, by a lifter.</div>
+  <div class="logo">macro<em>pilot</em>.fit</div>
+  <div>© 2026 — Built for lifters.</div>
 </footer>
 
 <script async src="https://tally.so/widgets/embed.js"></script>
 <script>
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
-      if (e.isIntersecting) {
-        e.target.classList.add('visible');
-        observer.unobserve(e.target);
-      }
-    });
-  }, { threshold: 0.1 });
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  document.documentElement.setAttribute('data-theme', savedTheme);
 
-  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+  function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    try {
+      localStorage.setItem('theme', next);
+    } catch (e) {}
+  }
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    if (typeof Tally !== 'undefined') {
+      Tally.openPopup('GxByEp', {
+        emoji: { text: '👊', animation: 'wave' }
+      });
+    } else {
+      window.location.href = '#tally-open=GxByEp&tally-emoji-text=👊&tally-emoji-animation=wave';
+    }
+    return false;
+  }
 </script>
 </body>
 </html>
