@@ -34,7 +34,7 @@
   }
 
   body { transition: background 0.3s ease, color 0.3s ease; }
-  .form-row, .submit-btn, .vs-col, nav, footer, .email-input { transition: background 0.3s ease, color 0.3s ease, border-color 0.2s ease; }
+  .submit-btn, .vs-col, nav, footer, .theme-toggle { transition: background 0.3s ease, color 0.3s ease, border-color 0.2s ease; }
 
   html { scroll-behavior: smooth; }
 
@@ -166,59 +166,33 @@
   .waitlist {
     max-width: 420px;
     margin: 0 auto 20px;
-  }
-
-  .form-row {
     display: flex;
-    gap: 8px;
-    background: var(--paper-pure);
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    padding: 6px;
-    transition: border-color 0.2s;
-  }
-
-  .form-row:focus-within {
-    border-color: var(--ink);
-  }
-
-  .email-input {
-    flex: 1;
-    background: transparent;
-    border: none;
-    outline: none;
-    font-family: var(--sans);
-    font-size: 15px;
-    padding: 10px 18px;
-    color: var(--ink);
-    min-width: 0;
-  }
-
-  .email-input::placeholder {
-    color: var(--ink-muted);
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
   }
 
   .submit-btn {
     background: var(--ink);
-    color: var(--paper-pure);
+    color: var(--paper);
     border: none;
     border-radius: 999px;
-    padding: 10px 22px;
+    padding: 16px 36px;
     font-family: var(--sans);
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 500;
     cursor: pointer;
-    transition: background 0.2s, transform 0.1s;
+    transition: background 0.2s, transform 0.1s, opacity 0.2s;
     white-space: nowrap;
+    letter-spacing: 0.01em;
   }
 
-  .submit-btn:hover { background: var(--ink-soft); }
+  .submit-btn:hover { opacity: 0.85; }
   .submit-btn:active { transform: scale(0.98); }
 
   .form-note {
     font-size: 13px;
     color: var(--ink-muted);
-    margin-top: 14px;
   }
 
   .form-note em {
@@ -406,39 +380,6 @@
     font-size: 18px;
   }
 
-  /* SUCCESS */
-  .success {
-    display: none;
-    text-align: center;
-    padding: 20px 0;
-    animation: fadeIn 0.4s ease;
-  }
-
-  .success-mark {
-    font-family: var(--serif);
-    font-size: 40px;
-    font-style: italic;
-    color: var(--ink);
-    margin-bottom: 12px;
-    line-height: 1;
-  }
-
-  .success p {
-    font-size: 15px;
-    color: var(--ink-soft);
-  }
-
-  .success p em {
-    font-family: var(--serif);
-    font-style: italic;
-    color: var(--ink);
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
   /* MOBILE */
   @media (max-width: 680px) {
     nav { padding: 24px 24px; }
@@ -449,14 +390,7 @@
     .cta { padding: 80px 24px; }
     footer { padding: 24px; flex-direction: column; gap: 12px; text-align: center; }
 
-    .form-row {
-      flex-direction: column;
-      border-radius: 12px;
-      padding: 8px;
-      gap: 8px;
-    }
-    .email-input { width: 100%; padding: 12px 16px; }
-    .submit-btn { width: 100%; padding: 12px; border-radius: 8px; }
+    .submit-btn { width: 100%; padding: 14px; }
 
     .benefit {
       grid-template-columns: 1fr;
@@ -494,23 +428,8 @@
   </p>
 
   <div class="waitlist" id="waitlist">
-    <form class="form-row" id="waitlist-form" onsubmit="return handleSubmit(event)">
-      <input
-        type="email"
-        class="email-input"
-        id="email"
-        placeholder="your@email.com"
-        required
-        autocomplete="email"
-      />
-      <button type="submit" class="submit-btn">Get early access</button>
-    </form>
+    <button class="submit-btn" onclick="openWaitlist()">Get early access</button>
     <p class="form-note">Early members get <em>lifetime 50% off</em> when we launch.</p>
-
-    <div class="success" id="success">
-      <div class="success-mark">✓</div>
-      <p>You're on the list.<br><em>We'll be in touch soon.</em></p>
-    </div>
   </div>
 </section>
 
@@ -584,16 +503,7 @@
   <p>Join the waitlist. Be first to stop guessing and start eating with intention.</p>
 
   <div class="waitlist">
-    <form class="form-row" onsubmit="return handleSubmit(event)">
-      <input
-        type="email"
-        class="email-input"
-        placeholder="your@email.com"
-        required
-        autocomplete="email"
-      />
-      <button type="submit" class="submit-btn">Get early access</button>
-    </form>
+    <button class="submit-btn" onclick="openWaitlist()">Get early access</button>
     <p class="form-note">Free to join. No credit card.</p>
   </div>
 </section>
@@ -617,8 +527,7 @@
     } catch (e) {}
   }
 
-  function handleSubmit(e) {
-    e.preventDefault();
+  function openWaitlist() {
     if (typeof Tally !== 'undefined') {
       Tally.openPopup('GxByEp', {
         emoji: { text: '👊', animation: 'wave' }
@@ -626,7 +535,6 @@
     } else {
       window.location.href = '#tally-open=GxByEp&tally-emoji-text=👊&tally-emoji-animation=wave';
     }
-    return false;
   }
 </script>
 </body>
