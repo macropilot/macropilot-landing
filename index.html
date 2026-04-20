@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MacroPilot – Your AI Nutrition Coach</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --black: #0a0a0a;
+    --off-black: #111111;
+    --panel: #161616;
+    --border: #2a2a2a;
+    --border-light: #333333;
+    --green: #b8ff57;
+    --green-dim: #8fcc3a;
+    --white: #f5f5f0;
+    --muted: #888880;
+    --condensed: 'Barlow Condensed', sans-serif;
+    --body: 'DM Sans', sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: var(--body);
+    font-weight: 400;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* NOISE TEXTURE OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.4;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 20px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10,10,10,0.85);
+    backdrop-filter: blur(12px);
+  }
+
+  .logo {
+    font-family: var(--condensed);
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .logo span { color: var(--green); }
+
+  .nav-badge {
+    font-size: 11px;
+    font-weight: 500;
+    font-family: var(--body);
+    color: var(--green);
+    background: rgba(184,255,87,0.1);
+    border: 1px solid rgba(184,255,87,0.25);
+    padding: 4px 12px;
+    border-radius: 20px;
+    letter-spacing: 0.05em;
+  }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 120px 40px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-bg-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: var(--condensed);
+    font-size: clamp(140px, 22vw, 320px);
+    font-weight: 900;
+    text-transform: uppercase;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(255,255,255,0.04);
+    white-space: nowrap;
+    pointer-events: none;
+    letter-spacing: -0.02em;
+    user-select: none;
+  }
+
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1fr 420px;
+    gap: 60px;
+    align-items: flex-end;
+    position: relative;
+    z-index: 2;
+    max-width: 1200px;
+  }
+
+  .hero-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .hero-label::before {
+    content: '';
+    display: block;
+    width: 24px;
+    height: 1px;
+    background: var(--green);
+  }
+
+  h1 {
+    font-family: var(--condensed);
+    font-size: clamp(64px, 9vw, 130px);
+    font-weight: 900;
+    text-transform: uppercase;
+    line-height: 0.92;
+    letter-spacing: -0.01em;
+    margin-bottom: 32px;
+  }
+
+  h1 em {
+    font-style: normal;
+    color: var(--green);
+    display: block;
+  }
+
+  .hero-sub {
+    font-size: 17px;
+    color: var(--muted);
+    max-width: 480px;
+    line-height: 1.7;
+    font-weight: 300;
+  }
+
+  .hero-sub strong {
+    color: var(--white);
+    font-weight: 500;
+  }
+
+  /* WAITLIST CARD */
+  .waitlist-card {
+    background: var(--panel);
+    border: 1px solid var(--border-light);
+    border-radius: 4px;
+    padding: 36px;
+    position: relative;
+    animation: fadeUp 0.8s ease 0.3s both;
+  }
+
+  .waitlist-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--green);
+  }
+
+  .waitlist-card h3 {
+    font-family: var(--condensed);
+    font-size: 22px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+  }
+
+  .waitlist-card p {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 24px;
+  }
+
+  .waitlist-count {
+    color: var(--green);
+    font-weight: 500;
+  }
+
+  .form-group { margin-bottom: 14px; }
+
+  .form-group label {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 7px;
+    font-weight: 500;
+  }
+
+  .form-group input,
+  .form-group select {
+    width: 100%;
+    background: var(--off-black);
+    border: 1px solid var(--border-light);
+    border-radius: 3px;
+    padding: 12px 16px;
+    font-size: 14px;
+    font-family: var(--body);
+    color: var(--white);
+    outline: none;
+    transition: border-color 0.2s;
+    appearance: none;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus {
+    border-color: var(--green);
+  }
+
+  .form-group input::placeholder { color: #555; }
+
+  .form-group select option { background: #1a1a1a; }
+
+  .btn-submit {
+    width: 100%;
+    background: var(--green);
+    color: var(--black);
+    border: none;
+    border-radius: 3px;
+    padding: 15px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-family: var(--condensed);
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    margin-top: 6px;
+  }
+
+  .btn-submit:hover { background: var(--green-dim); }
+  .btn-submit:active { transform: scale(0.99); }
+
+  .form-note {
+    font-size: 11px;
+    color: #555;
+    text-align: center;
+    margin-top: 12px;
+  }
+
+  .success-msg {
+    display: none;
+    text-align: center;
+    padding: 20px 0;
+  }
+
+  .success-msg .check {
+    font-size: 40px;
+    margin-bottom: 12px;
+  }
+
+  .success-msg h4 {
+    font-family: var(--condensed);
+    font-size: 22px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 6px;
+  }
+
+  .success-msg p {
+    font-size: 13px;
+    color: var(--muted);
+    margin: 0;
+  }
+
+  /* STATS BAR */
+  .stats-bar {
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 24px 40px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    max-width: 100%;
+    background: var(--off-black);
+  }
+
+  .stat-item {
+    text-align: center;
+    padding: 0 20px;
+    border-right: 1px solid var(--border);
+  }
+
+  .stat-item:last-child { border-right: none; }
+
+  .stat-num {
+    font-family: var(--condensed);
+    font-size: 42px;
+    font-weight: 800;
+    color: var(--green);
+    line-height: 1;
+    display: block;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+    letter-spacing: 0.05em;
+  }
+
+  /* BENEFITS */
+  .benefits {
+    padding: 100px 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 60px;
+    gap: 40px;
+  }
+
+  .section-tag {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-tag::before {
+    content: '';
+    display: block;
+    width: 24px;
+    height: 1px;
+    background: var(--green);
+  }
+
+  h2 {
+    font-family: var(--condensed);
+    font-size: clamp(42px, 5vw, 72px);
+    font-weight: 800;
+    text-transform: uppercase;
+    line-height: 0.95;
+    letter-spacing: -0.01em;
+  }
+
+  .section-desc {
+    font-size: 15px;
+    color: var(--muted);
+    max-width: 300px;
+    line-height: 1.7;
+    font-weight: 300;
+    flex-shrink: 0;
+  }
+
+  .benefits-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+
+  .benefit-item {
+    background: var(--off-black);
+    padding: 48px 36px;
+    position: relative;
+    transition: background 0.3s;
+  }
+
+  .benefit-item:hover { background: var(--panel); }
+
+  .benefit-num {
+    font-family: var(--condensed);
+    font-size: 72px;
+    font-weight: 900;
+    color: transparent;
+    -webkit-text-stroke: 1px var(--border-light);
+    line-height: 1;
+    margin-bottom: 24px;
+    transition: -webkit-text-stroke-color 0.3s;
+  }
+
+  .benefit-item:hover .benefit-num {
+    -webkit-text-stroke-color: rgba(184,255,87,0.3);
+  }
+
+  .benefit-icon {
+    width: 40px;
+    height: 40px;
+    background: rgba(184,255,87,0.1);
+    border: 1px solid rgba(184,255,87,0.2);
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+
+  .benefit-icon svg {
+    width: 18px;
+    height: 18px;
+    stroke: var(--green);
+    fill: none;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .benefit-item h3 {
+    font-family: var(--condensed);
+    font-size: 26px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    margin-bottom: 12px;
+    line-height: 1.1;
+  }
+
+  .benefit-item p {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.7;
+    font-weight: 300;
+  }
+
+  .benefit-item p strong {
+    color: var(--white);
+    font-weight: 500;
+  }
+
+  /* HOW IT WORKS */
+  .how {
+    padding: 0 40px 100px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+    margin-top: 60px;
+  }
+
+  .step {
+    position: relative;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+
+  .step-num {
+    font-family: var(--condensed);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--green);
+    margin-bottom: 20px;
+  }
+
+  .step h4 {
+    font-family: var(--condensed);
+    font-size: 22px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 10px;
+  }
+
+  .step p {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.7;
+    font-weight: 300;
+  }
+
+  /* VS SECTION */
+  .vs-section {
+    margin: 0 40px 100px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    padding: 60px;
+    display: grid;
+    grid-template-columns: 1fr 1px 1fr;
+    gap: 60px;
+    align-items: start;
+  }
+
+  .vs-divider {
+    background: var(--border);
+    align-self: stretch;
+  }
+
+  .vs-label {
+    font-family: var(--condensed);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .vs-label.bad { color: var(--muted); }
+  .vs-label.good { color: var(--green); }
+
+  .vs-list { list-style: none; }
+
+  .vs-list li {
+    font-size: 14px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--muted);
+    font-weight: 300;
+  }
+
+  .vs-list li:last-child { border-bottom: none; }
+
+  .vs-list.good li { color: var(--white); }
+
+  .vs-icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+  }
+
+  .vs-icon.x { background: rgba(255,80,80,0.15); color: #ff5050; }
+  .vs-icon.check { background: rgba(184,255,87,0.15); color: var(--green); }
+
+  /* CTA BOTTOM */
+  .cta-bottom {
+    padding: 100px 40px;
+    text-align: center;
+    border-top: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cta-bottom::before {
+    content: 'JOIN';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: var(--condensed);
+    font-size: clamp(120px, 20vw, 280px);
+    font-weight: 900;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(255,255,255,0.03);
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  .cta-bottom h2 {
+    margin-bottom: 20px;
+    position: relative;
+  }
+
+  .cta-bottom p {
+    font-size: 16px;
+    color: var(--muted);
+    max-width: 480px;
+    margin: 0 auto 40px;
+    font-weight: 300;
+    position: relative;
+  }
+
+  .btn-cta {
+    display: inline-block;
+    background: var(--green);
+    color: var(--black);
+    padding: 16px 48px;
+    font-family: var(--condensed);
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-radius: 3px;
+    transition: background 0.2s, transform 0.1s;
+    position: relative;
+  }
+
+  .btn-cta:hover { background: var(--green-dim); }
+  .btn-cta:active { transform: scale(0.99); }
+
+  /* FOOTER */
+  footer {
+    padding: 30px 40px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #444;
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .fade-up {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+
+  .fade-up.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* MOBILE */
+  @media (max-width: 768px) {
+    nav { padding: 16px 20px; }
+    .hero { padding: 100px 20px 60px; }
+    .hero-grid { grid-template-columns: 1fr; gap: 40px; }
+    .stats-bar { padding: 20px; grid-template-columns: repeat(3,1fr); }
+    .stat-num { font-size: 28px; }
+    .benefits { padding: 60px 20px; }
+    .benefits-grid { grid-template-columns: 1fr; }
+    .section-header { flex-direction: column; align-items: flex-start; }
+    .steps { grid-template-columns: 1fr; }
+    .vs-section { margin: 0 20px 60px; padding: 30px 20px; grid-template-columns: 1fr; }
+    .vs-divider { display: none; }
+    .how { padding: 0 20px 60px; }
+    .cta-bottom { padding: 60px 20px; }
+    footer { flex-direction: column; gap: 10px; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">Macro<span>Pilot</span>.fit</div>
+  <div class="nav-badge">Early Access</div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg-text">FUEL</div>
+  <div class="hero-grid">
+    <div>
+      <div class="hero-label">AI Nutrition Coach for Lifters</div>
+      <h1>Stop counting.<br><em>Start fueling.</em></h1>
+      <p class="hero-sub">
+        MacroPilot is the AI coach that tells you <strong>exactly what to eat today</strong> — based on your workout, your goals, and what's actually in your fridge. Not a food diary. A co-pilot.
+      </p>
+    </div>
+    <div class="waitlist-card">
+      <h3>Join the waitlist</h3>
+      <p>Be first when we launch. <span class="waitlist-count">147 lifters</span> already in line.</p>
+      <button class="btn-submit" data-tally-open="GxByEp" data-tally-emoji-text="👊" data-tally-emoji-animation="wave">CLAIM MY SPOT →</button>
+      <p class="form-note">Free to join. No credit card. No spam.</p>
+    </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <div class="stat-item">
+    <span class="stat-num">90%</span>
+    <div class="stat-label">of gym-goers don't hit their protein target</div>
+  </div>
+  <div class="stat-item">
+    <span class="stat-num">0</span>
+    <div class="stat-label">apps tell you what to eat — they only track what you ate</div>
+  </div>
+  <div class="stat-item">
+    <span class="stat-num">$14B</span>
+    <div class="stat-label">fitness app market — and still no real AI coach</div>
+  </div>
+</div>
+
+<!-- BENEFITS -->
+<section class="benefits">
+  <div class="section-header fade-up">
+    <div>
+      <div class="section-tag">Why MacroPilot</div>
+      <h2>Finally.<br>An AI that<br>feeds your gains.</h2>
+    </div>
+    <p class="section-desc">Three things every serious lifter needs — that no app has ever gotten right.</p>
+  </div>
+
+  <div class="benefits-grid fade-up">
+    <div class="benefit-item">
+      <div class="benefit-num">01</div>
+      <div class="benefit-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      </div>
+      <h3>Your plan.<br>Not a template.</h3>
+      <p>Tell MacroPilot your goal, your body, and <strong>what's in your fridge</strong>. It generates a full day of meals in seconds — tailored to whether you're training today or resting.</p>
+    </div>
+    <div class="benefit-item">
+      <div class="benefit-num">02</div>
+      <div class="benefit-icon">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+      <h3>Real-time.<br>Meal by meal.</h3>
+      <p>Ate something off-plan? Ask MacroPilot. It recalculates the rest of your day <strong>on the fly</strong> so one burger doesn't derail your week. No guilt, just data.</p>
+    </div>
+    <div class="benefit-item">
+      <div class="benefit-num">03</div>
+      <div class="benefit-icon">
+        <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </div>
+      <h3>Learns.<br>Every week.</h3>
+      <p>Weekly check-ins teach MacroPilot your patterns. <strong>If the scale isn't moving</strong>, it adjusts your calories and macros automatically — like a coach who actually pays attention.</p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how fade-up">
+  <div class="section-tag">How it works</div>
+  <h2>Three steps.<br>Zero guesswork.</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">STEP 01</div>
+      <h4>Set your profile</h4>
+      <p>Goal, weight, height, training frequency, food preferences. Takes 5 minutes. MacroPilot uses this as your permanent baseline.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">STEP 02</div>
+      <h4>Get today's plan</h4>
+      <p>Every morning, your AI generates 5 meals optimized for your training day. Full macros, prep time, and a grocery list if you need it.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">STEP 03</div>
+      <h4>Check in. Improve.</h4>
+      <p>Each evening, log how it went. MacroPilot adapts tomorrow's plan based on reality — not theory. Your body changes. So does your plan.</p>
+    </div>
+  </div>
+</section>
+
+<!-- VS SECTION -->
+<div class="vs-section fade-up">
+  <div>
+    <div class="vs-label bad">Every other app</div>
+    <ul class="vs-list">
+      <li><span class="vs-icon x">✕</span> Asks "what did you eat?"</li>
+      <li><span class="vs-icon x">✕</span> Shows you a database of 8M foods to scroll through</li>
+      <li><span class="vs-icon x">✕</span> Same macro targets forever</li>
+      <li><span class="vs-icon x">✕</span> Ignores whether you trained today</li>
+      <li><span class="vs-icon x">✕</span> Zero personalization after signup</li>
+    </ul>
+  </div>
+  <div class="vs-divider"></div>
+  <div>
+    <div class="vs-label good">MacroPilot</div>
+    <ul class="vs-list good">
+      <li><span class="vs-icon check">✓</span> Tells you exactly what to eat today</li>
+      <li><span class="vs-icon check">✓</span> Generates a full meal plan in 10 seconds</li>
+      <li><span class="vs-icon check">✓</span> Adjusts macros weekly based on your results</li>
+      <li><span class="vs-icon check">✓</span> Different plans for training vs rest days</li>
+      <li><span class="vs-icon check">✓</span> Learns your preferences over time</li>
+    </ul>
+  </div>
+</div>
+
+<!-- CTA BOTTOM -->
+<section class="cta-bottom fade-up">
+  <h2>Your gains are waiting.</h2>
+  <p>Join 147 lifters who are done guessing and ready to eat with intention.</p>
+  <a href="#tally-open=GxByEp&tally-emoji-text=👊&tally-emoji-animation=wave" class="btn-cta">GET EARLY ACCESS →</a>
+</section>
+
+<footer>
+  <div class="logo" style="font-size:16px;">Macro<span style="color:var(--green)">Pilot</span>.fit</div>
+  <div>© 2026 MacroPilot · Built for lifters, by a lifter.</div>
+</footer>
+
+<script async src="https://tally.so/widgets/embed.js"></script>
+<script>
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
